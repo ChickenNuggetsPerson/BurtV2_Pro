@@ -43,7 +43,34 @@
 // #include "pros/api_legacy.h"
 #include "pros/apix.h"
 
+// Define C++ Macros
+
+// A debug macro that takes in any inputs and uses std::cout with them
+#define DEBUGLOG(...) do { \
+    variablePrint(__VA_ARGS__); \
+    std::cout << std::endl; \
+} while(0);
+
+// #define DEBUGLOG(...) { };
+
+template<typename T>
+void variablePrint(const T& arg) {
+    std::cout << arg;
+}
+
+template<typename T, typename... Args>
+void variablePrint(const T& arg, const Args&... args) {
+    std::cout << arg;
+    variablePrint(args...);
+}
+
 #include "auton.h"
+#include "stateMachine.h"
+#include "controllerLoop.h"
+
+extern pros::Controller masterController;
+extern pros::Motor leftArm_Moter;
+extern pros::Motor rightArm_Moter;
 
 /**
  * If you find doing pros::Motor() to be tedious and you'd prefer just to do

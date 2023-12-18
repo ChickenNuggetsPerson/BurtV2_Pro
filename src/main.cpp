@@ -1,30 +1,39 @@
 #include "main.h"
 
 
-// Global Variables
-const RotationSensor leftEncoder(11);
-const RotationSensor rightEncoder(12);
+/**
+ * Catapult: 5
+ * Front Arm: 10
+ */
 
-auton::mode autonMode = auton::mode::none;
-bool autonHasRun = false;
+
+// Global Variables
+const RotationSensor leftEncoder(17);
+const RotationSensor rightEncoder(18);
+
+pros::Controller masterController = pros::Controller(pros::E_CONTROLLER_MASTER);
+pros::Motor leftArm_Moter = pros::Motor(-8);
+pros::Motor rightArm_Moter = pros::Motor(10);
+
 
 const std::shared_ptr<OdomChassisController> chassis = ChassisControllerBuilder()
-    .withMotors({1, 2}, {3, 4})
+    .withMotors({-6, -3}, {9, 2})
     // green gearset, 4 inch wheel diameter, 11.5 inch wheel track
-    .withDimensions(AbstractMotor::gearset::green, {{4_in, 11.5_in}, imev5GreenTPR})
+    .withDimensions(AbstractMotor::gearset::green, {{3.25_in, 9_in}, imev5GreenTPR * (36.0 / 60.0)})
     .withSensors(leftEncoder, rightEncoder)
     // specify the tracking wheels diameter (2.75 in), track (7 in), and TPR (360)
-    .withOdometry({{3.75_in, 7_in}, quadEncoderTPR}, StateMode::CARTESIAN)
+    .withOdometry({{3.50_in, 4_in}, 360}, StateMode::CARTESIAN)
     .buildOdometry();
 
 const std::shared_ptr<AsyncMotionProfileController> profileController = AsyncMotionProfileControllerBuilder()
     .withLimits({
-      1.0, // Maximum linear velocity of the Chassis in m/s
-      2.0, // Maximum linear acceleration of the Chassis in m/s/s
-      10.0 // Maximum linear jerk of the Chassis in m/s/s/s
+      0.5, // Maximum linear velocity of the Chassis in m/s
+      1.0, // Maximum linear acceleration of the Chassis in m/s/s
+      5.0 // Maximum linear jerk of the Chassis in m/s/s/s
     })
     .withOutput(chassis)
     .buildMotionProfileController();
+
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -32,10 +41,6 @@ const std::shared_ptr<AsyncMotionProfileController> profileController = AsyncMot
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void leftBtnPressed() { autonMode = auton::mode::left; }
-void skillsBtnPressed() { autonMode = auton::mode::skills; }
-void rightBtnPressed() { autonMode = auton::mode::right; }
-
 void renderScreen() {
 	pros::screen::erase();
 }
@@ -51,8 +56,10 @@ void screenPressed() {
 	renderScreen();
 }
 
+
 void initialize() {
 	pros::screen::touch_callback(screenPressed, pros::last_touch_e_t::E_TOUCH_PRESSED);
+	pros::Task controlLoop(controllerLoop);
 
 	renderScreen();
 }
@@ -87,47 +94,22 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-	if (autonHasRun) { return; }
 
-	autonHasRun = true;
-	
-	switch (autonMode) {
-		case auton::mode::left:
-			profileController->generatePath({
-					{0_ft, 0_ft, 0_deg}, 
-					{3_ft, 0_ft, 0_deg},
-					{3_ft, 3_ft, 0_deg}
-				},
-				"A" // Profile name
-			);
-			profileController->setTarget("A");
-			break;
+	std::shared_ptr<AsyncPositionController<double, double>> frontArm = AsyncPosControllerBuilder().withMotor(10).build();
+	frontArm->setTarget(-1000);
+	frontArm->waitUntilSettled();
 
-		case auton::mode::right:
-			profileController->generatePath({
-					{0_ft, 0_ft, 0_deg}, 
-					{3_ft, 0_ft, 0_deg},
-					{3_ft, 3_ft, 0_deg}
-				},
-				"A" // Profile name
-			);
-			profileController->setTarget("A");
-			break;
+	chassis->setState({0_in, 0_in, 0_deg});
 
-		case auton::mode::skills:
-			profileController->generatePath({
-					{0_ft, 0_ft, 0_deg}, 
-				},
-				"A" // Profile name
-			);
-			profileController->setTarget("A");
-			break;
-	
-	default:
-		break;
-	}
 
-	profileController->waitUntilSettled();
+
+	// Right Side AUTON
+	chassis->driveToPoint({0_tile, 1_tile});
+	chassis->waitUntilSettled();
+	chassis->driveToPoint({1_tile, 0_tile});
+	chassis->waitUntilSettled();
+	chassis->turnToAngle(0_deg);
+	chassis->waitUntilSettled();
 }
 
 /**
@@ -145,13 +127,12 @@ void autonomous() {
  */
 
 void opcontrol() {
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 	while (true) {
 
 		chassis->getModel()->tank(
-			master.get_analog(ANALOG_LEFT_Y),
-			master.get_analog(ANALOG_RIGHT_Y)
+			(double)masterController.get_analog(ANALOG_LEFT_Y) / 128.0,
+			(double)masterController.get_analog(ANALOG_RIGHT_Y) / 128.0
 		);
 
 		pros::delay(20);
