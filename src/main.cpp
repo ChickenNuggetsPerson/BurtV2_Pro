@@ -35,12 +35,7 @@ const std::shared_ptr<AsyncMotionProfileController> profileController = AsyncMot
     .buildMotionProfileController();
 
 
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
+
 void renderScreen() {
 	pros::screen::erase();
 }
@@ -50,13 +45,19 @@ void screenPressed() {
 	auto status =  pros::screen::touch_status();
 	int xPos = status.x;
 	int yPos = status.y;
+	DEBUGLOG("Screen Press: ( X: ", xPos, ", Y: ", yPos, " )")
 
 	// Check buttons
 
 	renderScreen();
 }
 
-
+/**
+ * Runs initialization code. This occurs as soon as the program is started.
+ *
+ * All other competition modes are blocked by initialize; it is recommended
+ * to keep execution time for this mode under a few seconds.
+ */
 void initialize() {
 	pros::screen::touch_callback(screenPressed, pros::last_touch_e_t::E_TOUCH_PRESSED);
 	pros::Task controlLoop(controllerLoop);
@@ -125,8 +126,7 @@ void autonomous() {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-
-void opcontrol() {
+__attribute__((noreturn)) void opcontrol() {
 
 	while (true) {
 

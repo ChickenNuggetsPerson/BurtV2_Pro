@@ -55,7 +55,7 @@ void wingsCheck() {
 
 // The main loop for the controller
 // Handles motor movement and button input
-void controllerLoop() {
+__attribute__((noreturn)) void controllerLoop() {
 
     // Main loop
     while (true) {
