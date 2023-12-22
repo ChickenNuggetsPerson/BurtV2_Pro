@@ -1,3 +1,3 @@
 pros b
-echo | pros u
-pros terminal
+echo | pros u --after run
+# pros terminal

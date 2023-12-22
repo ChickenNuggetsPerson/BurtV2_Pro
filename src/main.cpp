@@ -15,6 +15,8 @@ pros::Controller masterController = pros::Controller(pros::E_CONTROLLER_MASTER);
 pros::Motor leftArm_Moter = pros::Motor(-8);
 pros::Motor rightArm_Moter = pros::Motor(10);
 
+pros::Motor cata_Motor = pros::Motor(-5);
+
 
 const std::shared_ptr<OdomChassisController> chassis = ChassisControllerBuilder()
     .withMotors({-6, -3}, {9, 2})
@@ -60,6 +62,20 @@ void screenPressed() {
  */
 void initialize() {
 	pros::screen::touch_callback(screenPressed, pros::last_touch_e_t::E_TOUCH_PRESSED);
+
+
+
+	leftArm_Moter.move_voltage(-10000);
+	rightArm_Moter.move_voltage(-10000);
+
+	pros::delay(800);
+
+	leftArm_Moter.move_voltage(0);
+	rightArm_Moter.move_voltage(0);
+
+	leftArm_Moter.set_zero_position(0);
+	rightArm_Moter.set_zero_position(0);
+
 	pros::Task controlLoop(controllerLoop);
 
 	renderScreen();
@@ -96,21 +112,26 @@ void competition_initialize() {}
  */
 void autonomous() {
 
-	std::shared_ptr<AsyncPositionController<double, double>> frontArm = AsyncPosControllerBuilder().withMotor(10).build();
-	frontArm->setTarget(-1000);
-	frontArm->waitUntilSettled();
-
 	chassis->setState({0_in, 0_in, 0_deg});
 
-
-
 	// Right Side AUTON
-	chassis->driveToPoint({0_tile, 1_tile});
-	chassis->waitUntilSettled();
-	chassis->driveToPoint({1_tile, 0_tile});
-	chassis->waitUntilSettled();
-	chassis->turnToAngle(0_deg);
-	chassis->waitUntilSettled();
+	// chassis->driveToPoint({0_tile, 1_tile});
+	// chassis->waitUntilSettled();
+	// chassis->driveToPoint({1_tile, 0_tile});
+	// chassis->waitUntilSettled();
+	// chassis->turnToAngle(0_deg);
+	// chassis->waitUntilSettled();
+
+	wingStateMachine.setState(4);
+
+	chassis->moveDistance(2_tile);
+	chassis->turnAngle(90_deg);
+
+	chassis->moveDistance(4_in);
+
+	wingStateMachine.setState(1);
+
+	chassis->moveDistance(-10_in);
 }
 
 /**

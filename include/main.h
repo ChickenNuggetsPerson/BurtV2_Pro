@@ -71,6 +71,7 @@ void variablePrint(const T& arg, const Args&... args) {
 extern pros::Controller masterController;
 extern pros::Motor leftArm_Moter;
 extern pros::Motor rightArm_Moter;
+extern pros::Motor cata_Motor;
 
 /**
  * If you find doing pros::Motor() to be tedious and you'd prefer just to do

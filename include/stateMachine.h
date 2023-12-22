@@ -32,7 +32,7 @@ class ButtonSystem {
         // This function needs to be ran continually to keep checking for button presses
         // Run this in a while(true) loop
         void check() {
-            bool currentState = controllerPtr->get_digital(buttonID);
+            bool currentState = controllerPtr->get_digital(buttonID) == 1;
             
             if (pros::c::millis() < lastPress + pressTimout) { return; } 
 
@@ -122,14 +122,21 @@ class StateMachine {
         // Run this in a while(true) loop to have the machine continually run
         void iterate() {
             if (!running || currentState == -1) { return; }
+
+            // Change the state if requested
+            if (requestedState != -1) {
+                currentState = requestedState;
+                requestedState = -1;
+            }
+
             // Run the state and store the result to currentState variable
             currentState = this->stateStorage[currentState](); 
         }
 
         // Returns the current state
-        int getState() const {
-            return this->currentState;
-        }
+        int getState() const { return this->currentState; }
+
+        void setState(int stateID) { requestedState = stateID; }
 
         // Prepares the state machine along with sets the starting state
         void start(int startState) {
@@ -146,5 +153,6 @@ class StateMachine {
 
         std::unordered_map<int, Callback> stateStorage = std::unordered_map<int, Callback>();
         int currentState = -1; // -1 for default, other numbers for array
+        int requestedState = -1;
         bool running = false;
 };
