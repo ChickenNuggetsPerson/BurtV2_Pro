@@ -149,6 +149,15 @@ class StateMachine {
             this->running = false;
         }
 
+        // Gets all of the state IDs stored
+        std::vector<int> getStates() {
+        std::vector<int> states = std::vector<int>();
+            for (auto const& m: stateStorage) {
+                states.push_back(m.first);
+            }
+            return states;
+        }
+
     private:
 
         std::unordered_map<int, Callback> stateStorage = std::unordered_map<int, Callback>();

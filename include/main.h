@@ -41,7 +41,7 @@
  */
 #include "okapi/api.hpp"
 // #include "pros/api_legacy.h"
-#include "pros/apix.h"
+// #include "pros/apix.h"
 
 // Define C++ Macros
 
@@ -64,9 +64,15 @@ void variablePrint(const T& arg, const Args&... args) {
     variablePrint(args...);
 }
 
+#include "misc.h"
 #include "auton.h"
 #include "stateMachine.h"
 #include "controllerLoop.h"
+
+
+extern auton::AutonSystem autonSystem;
+extern std::shared_ptr<okapi::OdomChassisController> chassis;
+extern std::shared_ptr<okapi::AsyncMotionProfileController> profileController;
 
 extern pros::Controller masterController;
 extern pros::Motor leftArm_Moter;

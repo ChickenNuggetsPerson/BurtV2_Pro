@@ -8,6 +8,8 @@
 
 
 // Global Variables
+auton::AutonSystem autonSystem = auton::AutonSystem();
+
 const RotationSensor leftEncoder(17);
 const RotationSensor rightEncoder(18);
 
@@ -18,7 +20,7 @@ pros::Motor rightArm_Moter = pros::Motor(10);
 pros::Motor cata_Motor = pros::Motor(-5);
 
 
-const std::shared_ptr<OdomChassisController> chassis = ChassisControllerBuilder()
+std::shared_ptr<OdomChassisController> chassis = ChassisControllerBuilder()
     .withMotors({-6, -3}, {9, 2})
     // green gearset, 4 inch wheel diameter, 11.5 inch wheel track
     .withDimensions(AbstractMotor::gearset::green, {{3.25_in, 9_in}, imev5GreenTPR * (36.0 / 60.0)})
@@ -27,7 +29,7 @@ const std::shared_ptr<OdomChassisController> chassis = ChassisControllerBuilder(
     .withOdometry({{3.50_in, 4_in}, 360}, StateMode::CARTESIAN)
     .buildOdometry();
 
-const std::shared_ptr<AsyncMotionProfileController> profileController = AsyncMotionProfileControllerBuilder()
+std::shared_ptr<AsyncMotionProfileController> profileController = AsyncMotionProfileControllerBuilder()
     .withLimits({
       0.5, // Maximum linear velocity of the Chassis in m/s
       1.0, // Maximum linear acceleration of the Chassis in m/s/s
@@ -38,31 +40,17 @@ const std::shared_ptr<AsyncMotionProfileController> profileController = AsyncMot
 
 
 
+void screenPressed() { autonSystem.screenPressed(); }
 void renderScreen() {
-	pros::screen::erase();
+	while (true) {
+		autonSystem.renderScreen();
+		pros::delay(100);
+	}
 }
-
-
-void screenPressed() {
-	auto status =  pros::screen::touch_status();
-	int xPos = status.x;
-	int yPos = status.y;
-	DEBUGLOG("Screen Press: ( X: ", xPos, ", Y: ", yPos, " )")
-
-	// Check buttons
-
-	renderScreen();
-}
-
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
 void initialize() {
 	pros::screen::touch_callback(screenPressed, pros::last_touch_e_t::E_TOUCH_PRESSED);
-
+	autonSystem.initialize();
+	pros::Task renderScreenTask(renderScreen);
 
 
 	leftArm_Moter.move_voltage(-10000);
@@ -76,77 +64,14 @@ void initialize() {
 	leftArm_Moter.set_zero_position(0);
 	rightArm_Moter.set_zero_position(0);
 
+
 	pros::Task controlLoop(controllerLoop);
-
-	renderScreen();
 }
 
-/**
- * Runs while the robot is in the disabled state of Field Management System or
- * the VEX Competition Switch, following either autonomous or opcontrol. When
- * the robot is enabled, this task will exit.
- */
-void disabled() {}
+void disabled() { autonSystem.disabled(); }
+void competition_initialize() { autonSystem.autonInitialize(); }
+void autonomous() { autonSystem.started(); }
 
-/**
- * Runs after initialize(), and before autonomous when connected to the Field
- * Management System or the VEX Competition Switch. This is intended for
- * competition-specific initialization routines, such as an autonomous selector
- * on the LCD.
- *
- * This task will exit when the robot is enabled and autonomous or opcontrol
- * starts.
- */
-void competition_initialize() {}
-
-/**
- * Runs the user autonomous code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the autonomous
- * mode. Alternatively, this function may be called in initialize or opcontrol
- * for non-competition testing purposes.
- *
- * If the robot is disabled or communications is lost, the autonomous task
- * will be stopped. Re-enabling the robot will restart the task, not re-start it
- * from where it left off.
- */
-void autonomous() {
-
-	chassis->setState({0_in, 0_in, 0_deg});
-
-	// Right Side AUTON
-	// chassis->driveToPoint({0_tile, 1_tile});
-	// chassis->waitUntilSettled();
-	// chassis->driveToPoint({1_tile, 0_tile});
-	// chassis->waitUntilSettled();
-	// chassis->turnToAngle(0_deg);
-	// chassis->waitUntilSettled();
-
-	wingStateMachine.setState(4);
-
-	chassis->moveDistance(2_tile);
-	chassis->turnAngle(90_deg);
-
-	chassis->moveDistance(4_in);
-
-	wingStateMachine.setState(1);
-
-	chassis->moveDistance(-10_in);
-}
-
-/**
- * Runs the operator control code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the operator
- * control mode.
- *
- * If no competition control is connected, this function will run immediately
- * following initialize().
- *
- * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot will restart the
- * task, not resume it from where it left off.
- */
 __attribute__((noreturn)) void opcontrol() {
 
 	while (true) {
