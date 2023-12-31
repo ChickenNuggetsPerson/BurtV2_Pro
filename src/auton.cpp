@@ -45,6 +45,13 @@ void auton::AutonSystem::initialize() {
         mode = readFile("/usd/lastMode.txt");
     }
 
+    if (readFile("/usd/isTank.txt") > 100) {
+        DEBUGLOG("SD Card being weird")
+        isTankDrive = true;
+    } else {
+        isTankDrive = readFile("/usd/isTank.txt");
+    }
+
     this->stateMachine.start(mode); // Set the nothing state as default
 }
 void auton::AutonSystem::autonInitialize() {
@@ -77,6 +84,12 @@ void auton::AutonSystem::screenPressed() {
         int btnHeight = (screenHeight - 10) / stateAmt;
         mode = (yPos - 5) / btnHeight;
         writeFile("/usd/lastMode.txt", mode);
+    }
+
+    if (xPos < 100 && yPos > screenHeight - ((screenHeight - 10) / stateAmt) * 2) {
+        int btnHeight = (screenHeight - 10) / stateAmt;
+        isTankDrive = (yPos - 5) / btnHeight != 3;
+        writeFile("/usd/isTank.txt", isTankDrive);
     }
 
     updateScreen = true;
@@ -113,6 +126,15 @@ void auton::AutonSystem::renderScreen() {
             pros::screen::print(pros::E_TEXT_MEDIUM_CENTER, 390, 5 + ( btnHeight * i) + (btnHeight/2), stateNames[i].c_str());
         }
     }
+
+    // Draw Drive Mode Button
+    pros::screen::draw_rect(5, screenHeight - 5, 100, screenHeight - 5 - btnHeight);
+    pros::screen::draw_rect(5, screenHeight - 5 - btnHeight, 100, screenHeight - 5 - btnHeight * 2);
+
+    pros::screen::set_pen(isTankDrive? COLOR_WHITE : COLOR_GREEN);
+    pros::screen::print(pros::E_TEXT_MEDIUM_CENTER, 15, screenHeight - 5 - (btnHeight/2), "Arcade");
+    pros::screen::set_pen(isTankDrive? COLOR_GREEN : COLOR_WHITE);
+    pros::screen::print(pros::E_TEXT_MEDIUM_CENTER, 15, screenHeight - 5 - (btnHeight/2) - btnHeight, "Tank");
 
 
 

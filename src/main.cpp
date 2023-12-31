@@ -76,10 +76,18 @@ __attribute__((noreturn)) void opcontrol() {
 
 	while (true) {
 
-		chassis->getModel()->tank(
-			(double)masterController.get_analog(ANALOG_LEFT_Y) / 128.0,
-			(double)masterController.get_analog(ANALOG_RIGHT_Y) / 128.0
-		);
+		if (autonSystem.isTank()) {
+			chassis->getModel()->tank(
+				(double)masterController.get_analog(ANALOG_LEFT_Y) / 128.0,
+				(double)masterController.get_analog(ANALOG_RIGHT_Y) / 128.0
+			);
+		} else {
+			// Arcade Drive
+			chassis->getModel()->arcade(
+				(double)masterController.get_analog(ANALOG_LEFT_Y) / 128.0,
+				(double)masterController.get_analog(ANALOG_RIGHT_X) / 128.0
+			);
+		}
 
 		pros::delay(20);
 	}

@@ -28,6 +28,9 @@ namespace auton {
                 this->stateNames[modeId] = modeName;
             }
 
+            inline bool isTank() const { return isTankDrive; }
+
+
         private:
             int mode = nothing;
             StateMachine stateMachine = StateMachine();      
@@ -35,6 +38,8 @@ namespace auton {
             
             bool updateScreen = true;
             int initialRenders = 50;
+
+            bool isTankDrive = true;
     };
 
 };
