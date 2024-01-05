@@ -54,7 +54,9 @@ void renderScreen() {
 	}
 }
 void initialize() {
+
 	chassis->setDefaultStateMode(okapi::StateMode::CARTESIAN);
+	chassis->setState({0_tile, 0_tile, 0_deg});
 
 	pros::Task positionPrintTask(positionPrint);
 

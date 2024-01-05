@@ -9,7 +9,7 @@ using namespace pros;
 const double Wing_rotationOne = 100;
 const double Wing_rotationTwo = 1000;
 const double Wing_rotationThree = 2100;
-const double Wing_rotationClose = 2600;
+const double Wing_rotationClose = 2490;
 const int Wing_maxVel = 10000;
 
 // Wings logic
@@ -87,7 +87,7 @@ int wingCloseState() {
 int wingCataAlignState() {
     
     rightArm_Moter.move_absolute(1500, Wing_maxVel);
-    leftArm_Moter.move_absolute(W_pos1, Wing_maxVel);
+    leftArm_Moter.move_absolute(W_pos1 + 50, Wing_maxVel);
 
     if (int btn = getBtnPressed(); btn != -1) { return btn; }
 
@@ -151,3 +151,10 @@ __attribute__((noreturn)) void controllerLoop() {
         delay(20);
     }
 }
+
+
+void warnUser(std::string message) {
+    masterController.rumble("..");
+    masterController.clear();
+    masterController.set_text(1, 1, message);
+};

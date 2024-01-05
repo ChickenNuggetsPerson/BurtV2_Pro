@@ -32,9 +32,9 @@ int rightState() {
     
     chassis->moveDistance(-1_tile);
 
-    chassis->driveToPoint({2.5_tile, -2_tile});
+    // chassis->driveToPoint({2.5_tile, -2_tile});
 
-    wingStateMachine.setState(W_CataAlign);
+    // wingStateMachine.setState(W_CataAlign);
 
 
     return auton::nothing;
@@ -42,15 +42,39 @@ int rightState() {
 int skillState() {
     DEBUGLOG("State - ", "Skills")
 
+    chassis->setState({0_tile, 0_tile, 0_deg});
 
+    chassis->driveToPoint({-0.5_tile, 0.5_tile});
+    chassis->turnToPoint({-1_tile, 0_tile});
+    chassis->moveDistance(0.6_tile);
 
+    startCatapult();
+    pros::delay(55*1000);
+    stopCatapult();
+
+    // chassis->moveDistance(-10_in);
+
+    // chassis->driveToPoint({0_tile, 0.4_tile});
+
+    // chassis->setState({0_tile, 0_tile, 135_deg});
+    // chassis->driveToPoint({3_tile, 0.2_tile});
+    // chassis->driveToPoint({3_tile, 1_tile});
+    // chassis->driveToPoint({2.5_tile, 2.5_tile});
+    
+    // chassis->turnToAngle(90_deg);
+
+    // wingStateMachine.setState(W_pos2);
+    // pros::delay(500);
+
+    // chassis->moveDistance(2_tile);
+    
+    // chassis->moveDistance(-2_tile);
 
     return auton::nothing;
 }
 
 void auton::AutonSystem::initialize() {
     DEBUGLOG("Auton - Initializing")
-
 
     addMode(auton::nothing, "Nothing", nothingState);
     addMode(auton::left, "Left", leftState);

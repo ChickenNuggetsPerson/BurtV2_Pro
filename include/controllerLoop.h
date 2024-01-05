@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stateMachine.h"
+#include <string>
 
 
 enum WingStates {
@@ -8,4 +9,8 @@ enum WingStates {
 };
 extern StateMachine wingStateMachine;
 
+void startCatapult();
+void stopCatapult();
+
 void controllerLoop();
+void warnUser(std::string message);
