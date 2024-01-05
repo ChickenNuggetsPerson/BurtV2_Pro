@@ -310,7 +310,7 @@
     },
     "upload_options": {
       "description": "BurtV2 but with Pros",
-      "slot": 2,
+      "slot": 1,
       "icon": "pizza"
     }
   }

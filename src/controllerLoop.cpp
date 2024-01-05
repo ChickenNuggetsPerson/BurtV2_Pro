@@ -13,9 +13,6 @@ const double Wing_rotationClose = 2600;
 const int Wing_maxVel = 10000;
 
 // Wings logic
-enum WingStates {
-    W_loose, W_pos1, W_pos2, W_pos3, W_close, W_CataAlign
-};
 int getBtnPressed() {
     if (masterController.get_digital(E_CONTROLLER_DIGITAL_B))
         return W_pos1;
@@ -96,6 +93,15 @@ int wingCataAlignState() {
 
     return W_CataAlign;
 }
+int wingLeftAutonState() {
+    
+    rightArm_Moter.move_absolute(W_pos1, Wing_maxVel);
+    leftArm_Moter.move_absolute(1500, Wing_maxVel);
+
+    if (int btn = getBtnPressed(); btn != -1) { return btn; }
+
+    return W_LeftAutonPoleTouch;
+}
 
 bool cata_autoLaunch = false;
 void startCatapult() {
@@ -133,6 +139,7 @@ __attribute__((noreturn)) void controllerLoop() {
     wingStateMachine.addState(W_pos3, wingPos3State);
     wingStateMachine.addState(W_close, wingCloseState);
     wingStateMachine.addState(W_CataAlign, wingCataAlignState);
+    wingStateMachine.addState(W_LeftAutonPoleTouch, wingLeftAutonState);
     wingStateMachine.start(W_pos1);
 
     // Main loop

@@ -6,15 +6,35 @@
 int nothingState() { DEBUGLOG("State - ", "Nothing") return auton::nothing; };
 int leftState() {
     DEBUGLOG("State - ", "Left")
-
-
+    
+    // Dp nothing
 
     return auton::nothing;
 };
 int rightState() {
     DEBUGLOG("State - ", "Right")
 
+    chassis->setState({0_tile, 0_tile, 0_deg});
+    
+    wingStateMachine.setState(W_close);
+    pros::delay(700);
 
+    chassis->driveToPoint({0_tile, 2_tile});
+    chassis->waitUntilSettled();
+
+    chassis->turnToAngle(90_deg);
+    chassis->waitUntilSettled();
+
+    chassis->moveDistance(10_in);
+    
+    wingStateMachine.setState(W_pos3);
+    pros::delay(500);
+    
+    chassis->moveDistance(-1_tile);
+
+    chassis->driveToPoint({2.5_tile, -2_tile});
+
+    wingStateMachine.setState(W_CataAlign);
 
 
     return auton::nothing;

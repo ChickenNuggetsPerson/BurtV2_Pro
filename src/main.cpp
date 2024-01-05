@@ -10,8 +10,8 @@
 // Global Variables
 auton::AutonSystem autonSystem = auton::AutonSystem();
 
-const RotationSensor leftEncoder(17);
-const RotationSensor rightEncoder(18);
+RotationSensor leftEncoder(17);
+RotationSensor rightEncoder(18, true);
 
 pros::Controller masterController = pros::Controller(pros::E_CONTROLLER_MASTER);
 pros::Motor leftArm_Moter = pros::Motor(-8);
@@ -39,6 +39,12 @@ std::shared_ptr<AsyncMotionProfileController> profileController = AsyncMotionPro
     .buildMotionProfileController();
 
 
+void positionPrint() {
+	while (true) {
+		pros::delay(500);
+		DEBUGLOG("POS: ", chassis->getOdometry()->getState().str(1_tile, 1_deg))
+	}
+}
 
 void screenPressed() { autonSystem.screenPressed(); }
 void renderScreen() {
@@ -48,6 +54,10 @@ void renderScreen() {
 	}
 }
 void initialize() {
+	chassis->setDefaultStateMode(okapi::StateMode::CARTESIAN);
+
+	pros::Task positionPrintTask(positionPrint);
+
 	pros::screen::touch_callback(screenPressed, pros::last_touch_e_t::E_TOUCH_PRESSED);
 	autonSystem.initialize();
 	pros::Task renderScreenTask(renderScreen);
